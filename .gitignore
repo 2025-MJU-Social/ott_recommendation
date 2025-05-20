@@ -1,0 +1,8 @@
+# folders
+node_modules
+dist
+dump
+__pycache__
+
+# files
+.env
