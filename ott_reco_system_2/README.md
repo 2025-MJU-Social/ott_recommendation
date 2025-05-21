@@ -1,5 +1,7 @@
 # OTT 추천 시스템 파이프라인
 
+> [코드 링크](https://github.com/2025-MJU-Social/ott_recommendation/tree/dohyeon/ott_reco_system_2)
+
 ## 개요
 
 이 시스템은 사용자의 선호도, 시청 가능 시간, 예산 등을 고려하여 최적의 OTT 서비스와 콘텐츠를 추천해주는 개인화된 추천 시스템이다. 자연어 처리와 유사도 분석을 통해 사용자 선호 장르와 콘텐츠 간의 의미적 관계를 파악한다.
