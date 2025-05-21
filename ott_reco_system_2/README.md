@@ -1,6 +1,6 @@
 # OTT 추천 시스템 파이프라인
 
-> [코드 링크](https://github.com/2025-MJU-Social/ott_recommendation/tree/dohyeon/ott_reco_system_2)
+> [코드 링크](https://github.com/2025-MJU-Social/ott_recommendation/blob/dohyeon/ott_reco_system_2/main.py)
 
 ## 개요
 
