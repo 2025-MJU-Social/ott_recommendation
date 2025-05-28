@@ -282,29 +282,38 @@ def calculate_ott_score(age, sex, intentions, experiences):
     for k in score_dict:
         score_dict[k] = round((score_dict[k] - min_score) / (max_score - min_score) + 1, 2)
 
-    return score_dict
+    score_dict_adjusted = score_dict.copy()
+    penalty_factor = 0.6   # 원래 점수의 60%만 사용
+    score_dict_adjusted['Netflix'] = score_dict['Netflix'] * penalty_factor
+
+    return score_dict_adjusted
 
 # 콘텐츠를 제공하는 OTT 플랫폼을 기반으로 최종 OTT 점수를 계산하여 OTT 추천 순위 부여
-def get_ott_recommendation_ranking(recommendations, score_dict):
-    # sum of ((추천된 컨텐츠를 제공하는 ott별 종합 점수) * (추천된 컨텐츠의 weight))
-    ott_score=[0]*8
-    for i in range(recommendations.shape[0]):
-        for ott in recommendations.iloc[i].iloc[2]:
-            if(ott=='Netflix'): ott_score[0] += score_dict['Netflix']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='Wavve'): ott_score[1] += score_dict['Wavve']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='TVING'): ott_score[2] += score_dict['TVING']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='WATCHA'): ott_score[3] += score_dict['WATCHA']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='U+모바일tv'): ott_score[4] += score_dict['U+모바일tv']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='Disney+'): ott_score[5] += score_dict['Disney+']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='coupang play'): ott_score[6] += score_dict['coupang play']*float(recommendations.iloc[i].iloc[1])
-            elif(ott=='Apple TV+'): ott_score[7] += score_dict['Apple TV+']*float(recommendations.iloc[i].iloc[1])
+def get_ott_recommendation_ranking_normalized(recommendations, score_dict):
+    # 플랫폼별 합계 점수와 개수를 구할 dict 초기화
+    sum_score = {k:0 for k in score_dict}
+    count = {k:0 for k in score_dict}
 
-    # score 내림차순으로 정렬해서 ott 추천 순위를 보기 쉽게 만듬
-    ott_score_df = pd.DataFrame({'OTT': [ott for ott in score_dict],
-                                'score': ott_score})
-    result = ott_score_df.sort_values(by="score", ascending=False).reset_index(drop=True)
-    
-    return result
+    # 합산
+    for _, row in recommendations.iterrows():
+        title, weight, plats = row['title'], row['weight'], row['platform']
+        for ott in plats:
+            if(ott=='Genie TV'): continue
+            sum_score[ott] += score_dict[ott] * float(weight)
+            count[ott] += 1
+
+    # 평균화: sum / count
+    avg_score = {}
+    for ott in score_dict:
+        if count[ott] > 0:
+            avg_score[ott] = round(sum_score[ott] / count[ott], 2)
+        else:
+            avg_score[ott] = 0.0
+
+    # DataFrame 생성 및 정렬
+    df = pd.DataFrame({'OTT': list(avg_score.keys()),
+                       'avg_score': list(avg_score.values())})
+    return df.sort_values(by='avg_score', ascending=False).reset_index(drop=True)
 
 def main():
     age, sex, titles_to_recommend = input_data()
@@ -327,7 +336,7 @@ def main():
     score_dict = calculate_ott_score(age, sex, intentions, experiences)
 
     # 추천된 컨텐츠를 기반한 최종적인 ott 점수 계산
-    result = get_ott_recommendation_ranking(recommendations, score_dict)
+    result = get_ott_recommendation_ranking_normalized(recommendations, score_dict)
 
     print(result)
     
